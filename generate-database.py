@@ -113,7 +113,7 @@ try:
 
     # Retrieve basic/preferred components ($0 for loading feeders) and exclude "0201" package
     cur.execute("""
-        SELECT * FROM jlc_components 
+        SELECT * FROM jlc_components
         WHERE (basic > 0 OR preferred > 0) AND package != '0201';
     """)
     filtered_components = cur.fetchall()
@@ -130,6 +130,11 @@ try:
     df_sorted = pd.merge(
         df_sorted, df_filtered[["lcsc", "Assembly Process", "Min Order Qty", "Attrition Qty"]], on="lcsc", how="right"
     )
+
+    # The upstream assembly list can contain repeated records for one component.
+    # Remove only fully identical merged rows; distinct component data is preserved.
+    df_sorted = df_sorted.drop_duplicates()
+
 
     df_sorted = df_sorted.sort_values(by=["category", "subcategory", "package"])
 
